@@ -19,14 +19,17 @@ pngoff = function(op)
 
 args = commandArgs(TRUE)
 
+fcat = function(...) invisible(return(NULL))
+if ("verbose" %in% args) fcat = cat
+
 lt = strsplit(readLines(args[2])," ")
 ttime = lapply(lt,function(x) as.numeric(x[-1]))
 names(ttime) = tolower(gsub("\\w+:","",sapply(lt,"[",1)))
 
 pattern = args[1]
-if (length(args) == 3) pattern = sprintf("\\<%s\\>",args[1])
+if ("word" %in% args) pattern = sprintf("\\<%s\\>",args[1])
 ind = which(regexpr(tolower(pattern),names(ttime)) > 0)
-stopifnot(length(ind) > 0)
+if (length(ind) == 0) stop(sprintf("pattern '%s' not found",pattern))
 
 ip = match("proc",names(ttime))
 stopifnot(! is.na(ip))
@@ -56,6 +59,7 @@ for (i in ind) {
 	pngalt(sprintf("%s.png",names(ttime)[i]))
 
 	if (length(t2) < length(procs)) {
+		fcat(". threads, tasks:",length(t2),length(procs),"\n")
 		titre[2] = "1 thread per task"
 		plot(t2,type="h",ylim=c(0,max(t2)),main=titre,xlab="MPI task",ylab="Time (s)",
 			xaxt="n")
@@ -65,6 +69,7 @@ for (i in ind) {
 
 		pngoff()
 	} else {
+		fcat(". threads, tasks:",length(t2)%/%length(procs),length(procs),"\n")
 		stopifnot(length(t2) %% length(procs) == 0)
 
 		t2 = matrix(t2,ncol=length(procs))
