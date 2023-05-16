@@ -1,8 +1,22 @@
 library(parallel)
 
-files = dir(pattern="drhook\\.prof\\.[1-9]")
+args = strsplit(commandArgs(trailingOnly=TRUE),split="=")
+cargs = lapply(args,function(x) unlist(strsplit(x[-1],split=":")))
+names(cargs) = sapply(args,function(x) x[1])
+
+files = dir(pattern="drhook\\.prof\\.[0-9]")
 nf = length(files)
-if (nf > 128) files = files[sample(nf,128+as.integer((nf-128)^.8))]
+if ("nfiles" %in% names(cargs) && (N=as.integer(cargs$nfiles)) > 0 && N < nf) {
+	ftask = as.integer(gsub("drhook\\.prof\\.","",files))
+	files = files[ftask <= N]
+	nf = length(files)
+	cat("--> limiting files to",nf,"1st ones\n")
+}
+
+if (nf > 128) {
+	cat("--> selecting 128 files among",nf,"initial file list\n")
+	files = files[sample(nf,128+as.integer((nf-128)^.8))]
+}
 
 # convert from lexical to numeric order
 procs = as.integer(gsub("drhook\\.prof\\.","",files))

@@ -11,10 +11,11 @@ then
 and drtot.txt), mainly for subsequent processing by drdiff.sh
 
 Usage:
-	drh.sh [DIR] [-f] [-h]
+	drh.sh [DIR] [-n N] [-f] [-h]
 
 Options:
 	DIR: path to a directory with 'drhook.prof' files (default: current directory)
+	-n: restrict input file list to N 1st ones
 	-f: force execution, even when drself.txt is newer than drhook.prof.1
 
 Details:
@@ -23,12 +24,17 @@ are newer than a previously produced drself.txt, except when option '-f' is used
 	exit
 fi
 
+nfiles=0
 force=0
 dir=""
 
 while [ $# -ne 0 ]
 do
 	case $1 in
+		-n)
+			nfiles=$2
+			shift
+			;;
 		-f)
 			force=1
 			;;
@@ -50,16 +56,17 @@ done
 
 [ "$dir" ] && cd $dir >/dev/null
 
-if [ ! -e drhook.prof.1 ]
+drhp=$(find -name drhook.prof.\* | sort | head -1)
+if [ -z "$drhp" ]
 then
 	echo "--> no Dr Hook profiling files in '$dir'" >&2
 	exit
 fi
 
-if [ ! -s drself.txt ] || [ drhook.prof.1 -nt drself.txt ] || [ $force -eq 1 ]
+if [ ! -s drself.txt ] || [ $drhp -nt drself.txt ] || [ $force -eq 1 ]
 then
 	type R >/dev/null 2>&1 || module load -s intel R >/dev/null 2>&1
 
-	R --slave -f $drh/cpu.R
+	R --slave -f $drh/cpu.R --args nfiles=$nfiles
 fi
 
