@@ -12,8 +12,8 @@ t2 = lapply(lf2,function(x) as.numeric(x[-1]))
 ip = match(c("proc","call"),f2)
 np = length(t2[[ip[1]]])
 ntt = max(sapply(t2[-ip],length))
-stopifnot(ntt %% np == 0)
-nt = ntt/np
+if (ntt %% np != 0) warning("some calls are not multiples of tasks")
+nt = as.integer(ntt/np)
 
 calls = as.integer(t2[[ip[2]]])
 
