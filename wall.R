@@ -37,8 +37,9 @@ stopifnot(! is.na(ip))
 procs = ttime[[ip]]
 indo = order(procs)
 procs = sort(procs)
+nodes = ttime$node[indo]
 
-hasx11 = capabilities("X11")
+hasx11 = "pdf" %in% args && capabilities("X11")
 ask = hasx11 && interactive()
 
 if (! hasx11) cat("--> no X11 device, sending plots to PNG files\n")
@@ -54,7 +55,7 @@ for (i in ind) {
 
 	t2 = ttime[[i]]
 	h = max(t2)*c(.75,.9)
-	titre = paste("Wall-times for",names(ttime)[i])
+	titre = paste("Wall times for",names(ttime)[i])
 
 	pngalt(sprintf("%s.png",names(ttime)[i]))
 
@@ -76,17 +77,20 @@ for (i in ind) {
 		t2 = t2[,indo,drop=FALSE]
 		op = par(mfrow=c(2,1),cex=.83)
 
-		titre[2] = sprintf("%d threads per task",dim(t2)[1])
-		boxplot(t2,range=0,main=titre,xlab="MPI task",ylab="Time (s)",xaxt="n")
+		titre[2] = sprintf("%d thread(s) per task",dim(t2)[1])
+		boxplot(t2,range=0,main=titre,xlab="MPI task",ylab="Time (s)",border=nodes,
+			col=nodes,xaxt="n")
 		axis(1,seq(along=procs),procs)
 		abline(h=h,lty=2)
 		text(1,.99*h,sprintf("%d%%",c(75,90)),cex=.7,pos=3)
+		legend("top",legend=unique(nodes),lty=1,lwd=2,x.intersp=0.5,
+			col=seq(along=unique(nodes)),horiz=TRUE,title="Node index",seg.len=1)
 
 		pnx = apply(t2,2,function(x) diff(range(x))/max(x))
 		ix = which.max(pnx)
 		titre = sprintf("Wall times for threads, task #%d",ix)
 		plot(t2[,ix],type="h",ylim=c(0,max(t2[,ix])),main=titre,xlab="Unordered threads",
-			ylab="Time (s)")
+			ylab="Time (s)",col=nodes)
 		h1 = max(t2[,ix])*c(.75,.9)
 		abline(h=h1,lty=2)
 		text(1,.99*h1,sprintf("%d%%",c(75,90)),cex=.7,pos=3)

@@ -1,11 +1,27 @@
 library(parallel)
 
+# guess node number by threads binding
+nd = readLines("linux_bind.txt")
+l = strsplit(nd,":")
+thread = sapply(l,function(x) regexpr("1",x)[1])
+node = -thread
+inode = 1
+while (TRUE) {
+	it = duplicated(node,seq(inode))
+	i = node <= 0
+	if (all(! i)) break
+	node[i & ! it] = inode
+	inode = inode+1
+}
+
 args = strsplit(commandArgs(trailingOnly=TRUE),split="=")
 cargs = lapply(args,function(x) unlist(strsplit(x[-1],split=":")))
 names(cargs) = sapply(args,function(x) x[1])
 
 files = dir(pattern="drhook\\.prof\\.[0-9]")
 nf = length(files)
+stopifnot(length(node) == nf)
+
 if ("nfiles" %in% names(cargs) && (N=as.integer(cargs$nfiles)) > 0 && N < nf) {
 	ftask = as.integer(gsub("drhook\\.prof\\.","",files))
 	files = files[ftask <= N]
@@ -15,7 +31,9 @@ if ("nfiles" %in% names(cargs) && (N=as.integer(cargs$nfiles)) > 0 && N < nf) {
 
 if (nf > 128) {
 	cat("--> selecting 128 files among",nf,"initial file list\n")
-	files = files[sample(nf,128+as.integer((nf-128)^.8))]
+	ind = sample(nf,128+as.integer((nf-128)^.8))
+	files = files[ind]
+	node = node[ind]
 }
 
 # convert from lexical to numeric order
@@ -31,7 +49,7 @@ for (i in seq(along=files)) {
 
 l = unlist(l)
 
-times = sapply(strsplit(l,split=" +"),function(x) as.numeric(x[5:7]))
+times = sapply(strsplit(gsub("^ +","",l),split=" +"),function(x) as.numeric(x[4:6]))
 #funs = sapply(strsplit(l,split="  +"),"[",10)
 funs = gsub(": +",":",sapply(l,substring,97,USE.NAMES=FALSE))
 cat("Nb of functions-threads:",length(funs),"\n")
@@ -45,6 +63,8 @@ cont = file("drtot.txt",open="w")
 
 cat("proc",procs,"\n",file=cons)
 cat("proc",procs,"\n",file=cont)
+cat("node",node,"\n",file=cons)
+cat("node",node,"\n",file=cont)
 
 indf = vector("integer",length(foncs))
 
