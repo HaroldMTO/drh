@@ -9,7 +9,7 @@ f2 = sapply(lf2,"[",1)
 t1 = lapply(lf1,function(x) as.numeric(x[-1]))
 t2 = lapply(lf2,function(x) as.numeric(x[-1]))
 
-ip = match(c("proc","call"),f2)
+ip = match(c("proc","call","node"),f2)
 np = length(t2[[ip[1]]])
 ntt = max(sapply(t2[-ip],length))
 if (ntt %% np != 0) warning("some calls are not multiples of tasks")
@@ -21,6 +21,8 @@ if (any(! is.na(ip))) {
 	f2 = f2[-na.omit(ip)]
 	t2 = t2[-na.omit(ip)]
 }
+
+stopifnot(length(f2) == length(calls))
 
 tt = numeric(length(f2))
 st = character(length(f2))
