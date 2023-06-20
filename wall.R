@@ -39,7 +39,7 @@ indo = order(procs)
 procs = sort(procs)
 nodes = ttime$node[indo]
 
-hasx11 = "pdf" %in% args && capabilities("X11")
+hasx11 = ! "png" %in% args && capabilities("X11")
 ask = hasx11 && interactive()
 
 if (! hasx11) cat("--> no X11 device, sending plots to PNG files\n")
@@ -60,10 +60,10 @@ for (i in ind) {
 	pngalt(sprintf("%s.png",names(ttime)[i]))
 
 	if (length(t2) < length(procs)) {
-		fcat(". threads, tasks:",length(t2),length(procs),"\n")
+		fcat(". occurrences, tasks:",length(t2),length(procs),"\n")
 		titre[2] = "1 thread per task"
-		plot(t2,type="h",ylim=c(0,max(t2)),main=titre,xlab="MPI task",ylab="Time (s)",
-			xaxt="n")
+		plot(t2,type="p",main=titre,xlab="MPI task (guessed)",ylab="Time (s)",col=nodes,
+			pch="-",cex=1.5,xaxt="n")
 		axis(1,procs[1:length(t2)])
 		abline(h=h,lty=2)
 		text(1,.99*h,sprintf("%d%%",c(75,90)),cex=.7,pos=3)

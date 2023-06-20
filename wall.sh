@@ -40,4 +40,4 @@ type R >/dev/null 2>&1 || module load -s intel R >/dev/null 2>&1
 
 echo " $*" | grep -q ' -w' && opt="$opt word"
 echo " $*" | grep -q ' -v' && opt="$opt verbose"
-R --slave -f $drh/wall.R --args "$1" $opt
+R --slave -f $drh/wall.R --args "$1" $opt png
