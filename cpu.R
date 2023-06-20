@@ -20,7 +20,6 @@ names(cargs) = sapply(args,function(x) x[1])
 
 files = dir(pattern="drhook\\.prof\\.[0-9]")
 nf = length(files)
-stopifnot(length(node) == nf)
 
 if ("nfiles" %in% names(cargs) && (N=as.integer(cargs$nfiles)) > 0 && N < nf) {
 	ftask = as.integer(gsub("drhook\\.prof\\.","",files))
@@ -39,6 +38,7 @@ if (nf > 128) {
 # convert from lexical to numeric order
 procs = as.integer(gsub("drhook\\.prof\\.","",files))
 files = files[order(procs)]
+node = node[order(procs)]
 procs = sort(procs)
 
 l = vector("list",length(files))
