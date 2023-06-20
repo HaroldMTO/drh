@@ -32,13 +32,15 @@ if (nf > 128) {
 	cat("--> selecting 128 files among",nf,"initial file list\n")
 	ind = sample(nf,128+as.integer((nf-128)^.8))
 	files = files[ind]
-	node = node[ind]
+} else {
+	cat("-->",nf,"DrHook files read\n")
 }
 
 # convert from lexical to numeric order
 procs = as.integer(gsub("drhook\\.prof\\.","",files))
+
 files = files[order(procs)]
-node = node[order(procs)]
+node = node[sort(procs)]
 procs = sort(procs)
 
 l = vector("list",length(files))
