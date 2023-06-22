@@ -31,18 +31,22 @@ if ("word" %in% args) pattern = sprintf("\\<%s\\>",args[1])
 ind = which(regexpr(tolower(pattern),names(ttime)) > 0)
 if (length(ind) == 0) stop(sprintf("pattern '%s' not found",pattern))
 
-ip = match("proc",names(ttime))
-stopifnot(! is.na(ip))
+ip = match(c("proc","node"),names(ttime))
+stopifnot(! is.na(ip[1]))
 
-procs = ttime[[ip]]
+procs = ttime[[ip[1]]]
 indo = order(procs)
 procs = sort(procs)
-nodes = ttime$node[indo]
+if (is.na(ip[2])) {
+	nodes = rep(1,length(procs))
+} else {
+	nodes = ttime$node[indo]
+}
 
 hasx11 = ! "png" %in% args && capabilities("X11")
 ask = hasx11 && interactive()
 
-if (! hasx11) cat("--> no X11 device, sending plots to PNG files\n")
+if (! capabilities("X11")) cat("--> no X11 device, sending plots to PNG files\n")
 
 nf = length(procs)
 

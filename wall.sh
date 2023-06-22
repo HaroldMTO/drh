@@ -16,6 +16,9 @@ Options:
 	-w: consider PATTERN as a whole word
 	-v: verbose mode
 	-h: print this help message and exit normally
+
+Details:
+	PATTERN is mandatory and is a positional argument (\$1).
 "
 }
 
@@ -31,13 +34,26 @@ then
 	exit 1
 fi
 
-opt="drtot.txt"
-[ $# -ge 2 -a -s "$2" ] && opt=$2 || opt="drtot.txt"
+patt="$1"
+shift
+
+opt=""
+echo " $*" | grep -q ' -w' && opt="word"
+echo " $*" | grep -q ' -v' && opt="$opt verbose"
+
+fic=drtot.txt
+while [ $# -gt 0 ]
+do
+	if [ -s "$1" ]
+	then
+		fic=$1
+		break
+	fi
+
+	shift
+done
 
 ls $fic >/dev/null
 
 type R >/dev/null 2>&1 || module load -s intel R >/dev/null 2>&1
-
-echo " $*" | grep -q ' -w' && opt="$opt word"
-echo " $*" | grep -q ' -v' && opt="$opt verbose"
-R --slave -f $drh/wall.R --args "$1" $opt png
+R --slave -f $drh/wall.R --args "$patt" $fic $opt png
