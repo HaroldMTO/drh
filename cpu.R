@@ -1,17 +1,22 @@
 library(parallel)
 
 # guess node number by threads binding
-nd = readLines("linux_bind.txt")
-l = strsplit(nd,":")
-thread = sapply(l,function(x) regexpr("1",x)[1])
-node = -thread
-inode = 1
-while (TRUE) {
-	it = duplicated(node,seq(inode))
-	i = node <= 0
-	if (all(! i)) break
-	node[i & ! it] = inode
-	inode = inode+1
+node = NULL
+if (file.exists("linux_bind.txt")) {
+	nd = readLines("linux_bind.txt")
+	l = strsplit(nd,":")
+	thread = sapply(l,function(x) regexpr("1",x)[1])
+	node = -thread
+	inode = 1
+	while (TRUE) {
+		it = duplicated(node,seq(inode))
+		i = node <= 0
+		if (all(! i)) break
+		node[i & ! it] = inode
+		inode = inode+1
+	}
+} else {
+	cat("--> no file linux_bind.txt\n")
 }
 
 args = strsplit(commandArgs(trailingOnly=TRUE),split="=")
@@ -19,10 +24,10 @@ cargs = lapply(args,function(x) unlist(strsplit(x[-1],split=":")))
 names(cargs) = sapply(args,function(x) x[1])
 
 files = dir(pattern="drhook\\.prof\\.[0-9]")
-nf = length(files)
+off = 0
+if (any(files == "drhook.prof.0")) off = 1
 
-ind = seq(along=node) %in% procs
-if (any(! ind)) cat("--> DrHook files missing for procs:",which(! ind),"\n")
+nf = length(files)
 
 if ("nfiles" %in% names(cargs) && (N=as.integer(cargs$nfiles)) > 0 && N < nf) {
 	ftask = as.integer(gsub("drhook\\.prof\\.","",files))
@@ -40,10 +45,9 @@ if (nf > 128) {
 }
 
 # convert from lexical to numeric order
-procs = as.integer(gsub("drhook\\.prof\\.","",files))
+procs = off+as.integer(gsub("drhook\\.prof\\.","",files))
 
 files = files[order(procs)]
-node = node[sort(procs)]
 procs = sort(procs)
 
 l = vector("list",length(files))
@@ -68,8 +72,12 @@ cont = file("drtot.txt",open="w")
 
 cat("proc",procs,"\n",file=cons)
 cat("proc",procs,"\n",file=cont)
-cat("node",node,"\n",file=cons)
-cat("node",node,"\n",file=cont)
+
+if (! is.null(node)) {
+	node = node[procs]
+	cat("node",node,"\n",file=cons)
+	cat("node",node,"\n",file=cont)
+}
 
 indf = vector("integer",length(foncs))
 

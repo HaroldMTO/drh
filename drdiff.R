@@ -53,16 +53,3 @@ for (i in seq(along=f2)) {
 
 ind = order(tt,decreasing=TRUE)
 writeLines(st[ind])
-
-if (F) {
-ind = match(lower(df1$fun),lower(df2$fun))
-ii = which(! is.na(ind))
-
-dft = df2[na.omit(ind),]
-dft[,-1] = dft[,-1]-df1[ii,-1]
-
-for (i in seq(dim(dft)[1])) {
-	s = sprintf("%.3f",quantile(dft[i,-1],probs=c(0,.5,1)))
-	cat(dft[i,1],":\t",paste(s,collapse="\t"),"\n")
-}
-}
