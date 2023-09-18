@@ -54,9 +54,16 @@ do
 	shift
 done
 
-[ "$dir" ] && cd $dir >/dev/null
+if [ "$dir" ] && echo "$dir" | grep -qE '[^ ] [^ ]'
+then
+	echo "Error: no space authorized in directory" >&2
+	exit 1
+else
+	(cd "$dir" >/dev/null)
+	dir=.
+fi
 
-drhp=$(find -name drhook.prof.\* | sort | head -1)
+drhp=$(find $dir -name drhook.prof.\* | sort | head -1)
 if [ -z "$drhp" ]
 then
 	echo "--> no Dr Hook profiling files in '$dir'" >&2
@@ -67,6 +74,6 @@ if [ ! -s drself.txt ] || [ $drhp -nt drself.txt ] || [ $force -eq 1 ]
 then
 	type R >/dev/null 2>&1 || module load -s intel R >/dev/null 2>&1
 
-	R --slave -f $drh/cpu.R --args nfiles=$nfiles
+	R --slave -f $drh/cpu.R --args path=$dir nfiles=$nfiles
 fi
 
