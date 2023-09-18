@@ -14,6 +14,7 @@ install:
 	make $B/drh.sh
 	make $B/drdiff.sh
 	make $B/wall.sh
+	make $B/mem.sh
 	if git status >/dev/null 2>&1; then \
 		grep -q $(shell git log -1 --pretty=format:%h 2>/dev/null) $P/version || \
 			git log -1 --oneline >> $P/version; \
@@ -21,7 +22,7 @@ install:
 
 drh:
 	mkdir -p $P
-	cp -uv cpu.R drdiff.R wall.R $P
+	cp -uv cpu.R drdiff.R wall.R mem.R drtime.R $P
 
 $B/drh.sh: drh.sh
 	sed -re "s:drh=.+:drh=$P:" drh.sh > $B/drh.sh
@@ -34,3 +35,11 @@ $B/drdiff.sh: drdiff.sh
 $B/wall.sh: wall.sh
 	sed -re "s:drh=.+:drh=$P:" wall.sh > $B/wall.sh
 	chmod a+x $B/wall.sh
+
+$B/drtime.sh: drtime.sh
+	sed -re "s:drh=.+:drh=$P:" drtime.sh > $B/drtime.sh
+	chmod a+x $B/drtime.sh
+
+$B/mem.sh: mem.sh
+	sed -re "s:drh=.+:drh=$P:" mem.sh > $B/mem.sh
+	chmod a+x $B/mem.sh
