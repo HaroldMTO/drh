@@ -63,7 +63,7 @@ for (i in ind) {
 
 	pngalt(sprintf("%s.png",names(ttime)[i]))
 
-	if (length(t2) < length(procs)) {
+	if (length(t2) <= length(procs)) {
 		fcat(". occurrences, tasks:",length(t2),length(procs),"\n")
 		titre[2] = "1 thread per task"
 		plot(t2,type="p",main=titre,xlab="MPI task (guessed)",ylab="Time (s)",col=nodes,
@@ -71,6 +71,8 @@ for (i in ind) {
 		axis(1,procs[1:length(t2)])
 		abline(h=h,lty=2)
 		text(1,.99*h,sprintf("%d%%",c(75,90)),cex=.7,pos=3)
+		legend("top",legend=unique(nodes),lty=1,lwd=1.5,bg="transparent",x.intersp=0.5,
+			col=seq(along=unique(nodes)),horiz=TRUE,title="Node index",seg.len=.5)
 
 		pngoff()
 	} else {
@@ -87,7 +89,7 @@ for (i in ind) {
 		axis(1,seq(along=procs),procs)
 		abline(h=h,lty=2)
 		text(1,.99*h,sprintf("%d%%",c(75,90)),cex=.7,pos=3)
-		legend("top",legend=unique(nodes),lty=1,lwd=2,x.intersp=0.5,
+		legend("top",legend=unique(nodes),lty=1,lwd=2,bg="transparent",x.intersp=0.5,
 			col=seq(along=unique(nodes)),horiz=TRUE,title="Node index",seg.len=1)
 
 		pnx = apply(t2,2,function(x) diff(range(x))/max(x))
