@@ -52,7 +52,7 @@ procs = sort(procs)
 
 l = lf = vector("list",length(files))
 for (i in seq(along=files)) {
-	nd = readLines(files[i])
+	nd = readLines(paste(cargs$path,files[i],sep="/"))
 	l[[i]] = grep("\\w+@[0-9]+ *$",nd,value=TRUE)
 	#lt[[i]] = sapply(strsplit(gsub("^ +","",l[[i]]),split=" +"),function(x) as.numeric(x[4:6]))
 	lf[[i]] = gsub(": +",":",sapply(l[[i]],substring,97,USE.NAMES=FALSE))

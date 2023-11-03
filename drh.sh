@@ -54,12 +54,16 @@ do
 	shift
 done
 
-if [ "$dir" ] && echo "$dir" | grep -qE '[^ ] [^ ]'
+if [ -n "$dir" ]
 then
-	echo "Error: no space authorized in directory" >&2
-	exit 1
-else
+	if echo "$dir" | grep -qE '[^ ] [^ ]'
+	then
+		echo "Error: no space authorized in directory" >&2
+		exit 1
+	fi
+
 	(cd "$dir" >/dev/null)
+else
 	dir=.
 fi
 
