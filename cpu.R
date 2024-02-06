@@ -40,8 +40,6 @@ if (N < nf) {
 	ind = sample(nf,N+as.integer(sqrt(nf-N)))
 	cat("--> selecting",length(ind),"files among",nf,"initial file list\n")
 	files = files[ind]
-} else {
-	cat("-->",nf,"DrHook files read\n")
 }
 
 # convert from lexical to numeric order
@@ -50,24 +48,31 @@ procs = off+as.integer(gsub("drhook\\.prof\\.","",files))
 files = files[order(procs)]
 procs = sort(procs)
 
+cat("Read",nf,"DrHook files\n")
 l = lf = vector("list",length(files))
 for (i in seq(along=files)) {
 	nd = readLines(paste(cargs$path,files[i],sep="/"))
-	l[[i]] = grep("\\w+@[0-9]+ *$",nd,value=TRUE)
+	l[[i]] = grep("\"?[a-z]\\w+\"?@[0-9]+(:.+)? *$",nd,ignore.case=TRUE,value=TRUE)
+	l[[i]] = gsub("\\w+>|\"|odb\\w+ - +|:\\w+\\.[hc]$","",l[[i]])
+	l[[i]] = gsub("(\\w+):@?","\\1:",l[[i]])
+	l[[i]] = gsub(": +",":",l[[i]])
+	stopifnot(all(regexpr("[a-z]\\w+@\\d+ *$",l[[i]],ignore.case=TRUE) > 0))
 	#lt[[i]] = sapply(strsplit(gsub("^ +","",l[[i]]),split=" +"),function(x) as.numeric(x[4:6]))
-	lf[[i]] = gsub(": +",":",sapply(l[[i]],substring,97,USE.NAMES=FALSE))
+	lf[[i]] = sapply(l[[i]],substring,97,USE.NAMES=FALSE)
 }
 
 l = unlist(l)
 
 times = sapply(strsplit(gsub("^ +","",l),split=" +"),function(x) as.numeric(x[4:6]))
 funs = unlist(lf)
+stopifnot(all(regexpr("(\\w+[:%])*\\w+@\\d+$",funs) > 0))
 #funs = sapply(strsplit(l,split="  +"),"[",10)
 #funs = gsub(": +",":",sapply(l,substring,97,USE.NAMES=FALSE))
 cat("Nb of functions-threads:",length(funs),"\n")
 
 #foncs = unique(sort(gsub("\\*?((\\w+: *)?\\w+)@[0-9]+","\\1",funs)))
 foncs = unique(sort(gsub("((\\w+: *)*\\w+)@[0-9]+","\\1",funs)))
+
 cat("Nb of functions:",length(foncs),"\n")
 
 ntask = function(f) length(which(sapply(lf,function(fun) any(regexpr(f,fun) > 0))))
