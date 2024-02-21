@@ -21,7 +21,7 @@ d1=$1
 
 ls -d $d1 $d2 >/dev/null
 
-if [ ! -s self.txt ] || [ $d1/drself.txt -nt self.txt ] || [ $d2/drself.txt -nt self.txt ]
+if [ $d1/drself.txt -nt self.txt ] || [ $d2/drself.txt -nt self.txt ]
 then
 	type R >/dev/null 2>&1 || module load -s intel R >/dev/null 2>&1
 

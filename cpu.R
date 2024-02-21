@@ -78,8 +78,8 @@ cat("Nb of functions:",length(foncs),"\n")
 ntask = function(f) length(which(sapply(lf,function(fun) any(regexpr(f,fun) > 0))))
 ntaskf = unlist(mclapply(foncs,ntask,mc.cores=16))
 
-cons = file("drself.txt",open="w")
-cont = file("drtot.txt",open="w")
+cons = file(sprintf("%s/drself.txt",cargs$path),open="w")
+cont = file(sprintf("%s/drtot.txt",cargs$path),open="w")
 
 cat("proc",procs,"\n",file=cons)
 cat("proc",procs,"\n",file=cont)
