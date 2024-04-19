@@ -22,7 +22,7 @@ install:
 
 drh:
 	mkdir -p $P
-	cp -uv cpu.R drdiff.R wall.R mem.R drtime.R $P
+	cp -uv cpu.R drdiff.R wall.R mem.R memprof.R drtime.R $P
 
 $B/drh.sh: drh.sh
 	sed -re "s:drh=.+:drh=$P:" drh.sh > $B/drh.sh
@@ -43,3 +43,7 @@ $B/drtime.sh: drtime.sh
 $B/mem.sh: mem.sh
 	sed -re "s:drh=.+:drh=$P:" mem.sh > $B/mem.sh
 	chmod a+x $B/mem.sh
+
+$B/memprof.sh: memprof.sh
+	sed -re "s:drh=.+:drh=$P:" memprof.sh > $B/memprof.sh
+	chmod a+x $B/memprof.sh
