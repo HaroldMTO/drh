@@ -1,7 +1,10 @@
 # drh
 DrHook statistics
 
-This project provides 4 small tools for working on statistics based on DrHook output.
+This project provides some small tools for working on statistics based on DrHook output, except for mem.sh and memprof.sh, where graphical views are made for memory from Unix commands.
+
+Remark: memprof.sh relies on an R package, mfnode, which is on Github. You may install it before using memprof.sh and define one of R's environment variables (R_LIBS_USER or R_LIBS) pointing at this installation location.
+
 
 1 drh.sh
 
@@ -28,3 +31,9 @@ Tags are supplied via a simple text file where the 1st tag is used as a function
 - the other for unstaacked times
 
 Both graphics are shown by MPI task.
+
+5 mem.sh/memprof.sh
+
+These 2 scripts produce a graphical view of evolution of memory with time. They read a text file resulting from a background process of commands top or free during the execution of a binary (the model for instance).
+
+Graphics show results for either 1 or several MPI tasks.
