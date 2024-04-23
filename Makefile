@@ -13,8 +13,10 @@ install:
 	make drh
 	make $B/drh.sh
 	make $B/drdiff.sh
+	make $B/drtime.sh
 	make $B/wall.sh
 	make $B/mem.sh
+	make $B/memprof.sh
 	if git status >/dev/null 2>&1; then \
 		grep -q $(shell git log -1 --pretty=format:%h 2>/dev/null) $P/version || \
 			git log -1 --oneline >> $P/version; \

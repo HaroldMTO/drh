@@ -9,7 +9,7 @@ usage()
 running the Unix command free).
 
 Usage:
-	mem.sh PATTERN [-h]
+	memprof.sh PATTERN [-h]
 
 Options:
 	PATTERN: pattern for profiling files

@@ -1,5 +1,3 @@
-Gpar = list(mar=c(4,4,3,2)+.1,mgp=c(2.5,.8,0),cex=.9)
-
 ftag = c("ifs_init","su0yoma","su0yomb","cnt3_glo","iopack","transinvh","scan2m",
 	"obsv","transdirh","spcm","gpnspng","fullpos_drv")
 ftag2 = c("ifsinit","su0ya","su0yb","cnt3","iopack","trinvh","scan2m","obsv","trdirh",
@@ -28,7 +26,9 @@ pngoff = function(op)
 
 args = commandArgs(TRUE)
 
-df = read.table(args[1],col.names=c("tag","tag2"))
+df = read.table(args[1])
+if (dim(df)[2] == 1) df = cbind(df,df)
+names(df) = c("tag","tag2")
 
 fcat = function(...) invisible(return(NULL))
 if ("verbose" %in% args) fcat = cat
@@ -99,6 +99,8 @@ if (length(procs)*dim(m)[2] > 150) {
 	}
 
 	m = m[indp,,drop=FALSE]
+	procs = procs[indp]
+	nodes = nodes[indp]
 }
 
 hasx11 = ! "png" %in% args && capabilities("X11")
@@ -108,14 +110,11 @@ if (! capabilities("X11")) cat("--> no X11 device, sending plots to PNG files\n"
 
 prefix = sub("(./)?(\\w+)(.\\w+)?","\\2",args[1])
 fcat("prefix for plot files:",prefix,"(PNG)\n")
-pngalt(sprintf("%stask.png",prefix))
-op = par(Gpar)
-barplot(m,beside=TRUE,main=c(sprintf("DrHook total time by task, group %s",prefix),s),
-	ylab="Time (s)",cex.names=.9)
-pngoff(op)
+pngalt(sprintf("%s.png",prefix),720,720)
+op = par(mfrow=c(1,2),mar=c(4,4,3,2)+.1,mgp=c(2.5,.8,0),cex=.9)
+barplot(m,beside=TRUE,main=c("DrHook time by task",s),ylab="Time (s)",col=nodes+1)
+legend("topleft",legend=sprintf("Node %d",unique(nodes)),fill=unique(nodes)+1)
 
-pngalt(sprintf("%ssum.png",prefix))
-op = par(Gpar)
 ms = rowSums(m)
 f = dimnames(m)[[2]]
 x = barplot(t(m),names.arg=indp,legend.text=f,col=seq(along=f)+1,

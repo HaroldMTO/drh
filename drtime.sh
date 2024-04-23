@@ -13,49 +13,57 @@ Usage:
 Options:
 	FILE: short text file listing tags (roughly, function names) to be found in DRFILE
 	DRFILE: path to a file produced by drh.sh (defaults to 'drtot.txt')
+	-w: search for tags in DRFILE as whole words (like grep -w)
 	-v: verbose mode
 	-h: print this help message and exit normally
 
 Details:
 	FILE is mandatory and is a positional argument (\$1).
-	The 1st tag in FILE is considered as a tag which DrHook time encompasses time of all the other tags. On the contrary, times for other tags than this 1st one are considered to be non overlapping times, so that stacking these times has some meaning.
+	The 1st tag in FILE is considered as a tag which DrHook time encompasses time of \
+all the other tags. On the contrary, times for other tags than this 1st one are \
+considered to be non overlapping times, so that stacking these times has some meaning.
 "
 }
 
 set -e
 
-if echo " $*" | grep -qE ' -h'
+if [ $# -eq 0 ]
 then
 	usage
 	exit
-elif [ $# -eq 0 ]
-then
-	usage
-	exit 1
 fi
 
-flist="$1"
-ls $flist >/dev/null
-shift
-
+flist=""
+fhook=drtot.txt
 opt=""
-echo " $*" | grep -q ' -v' && opt="$opt verbose"
-
-fic=drtot.txt
 while [ $# -gt 0 ]
 do
-	if [ -s "$1" ]
-	then
-		fic=$1
-		break
-	fi
+	case $1 in
+	-h)
+		usage
+		exit
+		;;
+	-v)
+		opt=verbose
+		;;
+	*)
+		if [ -z "$flist" ]
+		then
+			flist=$1
+		else
+			fhook=$1
+		fi
+		;;
+	esac
 
 	shift
 done
 
-ls $fic >/dev/null
+ls $flist >/dev/null
+ls $fhook >/dev/null
 
-[ $fic = "drtot.txt" ] || echo "alternate file: $fic"
+[ $(basename $fhook) = "drtot.txt" ] || echo "alternate file: $fhook"
 
 type R >/dev/null 2>&1 || module load -s intel R >/dev/null 2>&1
-R --slave -f $drh/drtime.R --args $flist $fic $opt png
+
+R --slave -f $drh/drtime.R --args $flist $fhook $opt png
