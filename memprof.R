@@ -2,27 +2,16 @@ library(mfnode)
 
 Gpar = list(mar=c(2,2,3,1)+.1,mgp=c(2.1,.6,0),tcl=-.3,cex=.83)
 
-pngalt = function(...)
-{
-	if (ask && ! is.null(dev.list())) invisible(readline("Press enter to continue"))
-
-	if (! hasx11) {
-		stopifnot(is.null(dev.list()))
-		png(...)
-	}
-}
-
-pngoff = function(op)
-{
-	if (! hasx11) {
-		invisible(dev.off())
-	} else if (! missing(op)) {
-		par(op)
-	}
-}
-
 args = commandArgs(trailingOnly=TRUE)
 patt = args[1]
+
+if (interactive() && capabilities("X11")) {
+	cat("--> interactive plots\n")
+	png = dev.off = function(...) return(invisible(NULL))
+	options(device.ask.default=TRUE)
+} else {
+	cat("--> no X11 device, sending plots to PNG files\n")
+}
 
 cat("List and parse files - pattern:",patt,"\n")
 fics = dir(path=dirname(patt),pattern=basename(patt),full.names=TRUE)
@@ -56,10 +45,6 @@ for (i in seq(along=fics)) {
 
 ndim = sapply(fmem,dim)
 
-hasx11 = capabilities("X11") && interactive()
-ask = hasx11
-if (! hasx11) cat("--> no X11 device, sending plots to PNG files\n")
-
 re = ".+?(\\d+).*"
 patt2 = sub("\\d+$","",patt)
 if (all(regexpr(re,fics) > 0)) {
@@ -75,14 +60,26 @@ if (all(regexpr(re,fics) > 0)) {
 		frac = attr(fmem[[ind[1]]],"frac")
 		d1 = attr(fmem[[ind[1]]],"date")+frac
 		d = d1+seq(nt)*freq
-		tt = sprintf("Processes on host %d",hostu[i])
-		pngalt(sprintf("memprof.%s.png",hostu[i]))
+		tt = c("Memory usage",sprintf("%d processes on host %d",dim(used)[2],hostu[i]))
+		png(sprintf("memprof.%s.png",hostu[i]))
 		xlab = sprintf("Time (start: %s)",format(d1,"%H:%M:%S"))
-		matplot(d,used,type="l",lty=1,main=paste(tt,"- used memory"),xlab=xlab,
-			ylab="Memory (Gb)",col=grey.colors(4,end=.5),xaxt="n")
-		axis.POSIXct(1,pretty(d),format="%H:%M:%S")
+		matplot(d,used,type="l",lty=1,main=tt,xlab=xlab,ylab="Memory (Gb)",
+			col=grey.colors(4,end=.5),xaxt="n")
+		axis.POSIXct(1,d,format="%M:%S")
 		grid()
-		pngoff()
+		dev.off()
+
+		if (nt > 20) {
+			ix = which.max(diff(rowMeans(used)))
+			ntx = nt%/%20
+			indx = ix+seq(-ntx,ntx)
+			png(sprintf("memprofx.%s.png",hostu[i]))
+			matplot(d[indx],used[indx,],type="l",lty=1,main="Zoom at max",xlab=xlab,
+				ylab="Memory (Gb)",col=grey.colors(4,end=.5),xaxt="n")
+			axis.POSIXct(1,d[indx],format="%M:%S")
+			grid()
+			dev.off()
+		}
 	}
 } else {
 	ind = seq(along=fmem)
@@ -97,11 +94,11 @@ if (all(regexpr(re,fics) > 0)) {
 	frac = attr(fmem[[ind[1]]],"frac")
 	d1 = attr(fmem[[ind[1]]],"date")+frac
 	d = d1+seq(nt)*freq
-	pngalt("memprof.png")
+	png("memprof.png")
 	xlab = sprintf("Time (start: %s)",format(d1,"%H:%M:%S"))
 	matplot(d,used,type="l",lty=1,main="Used memory",xlab=xlab,
 		ylab="Memory (Gb)",col=grey.colors(4,end=.5),xaxt="n")
 	axis.POSIXct(1,pretty(d),format="%H:%M:%S")
 	grid()
-	pngoff()
+	dev.off()
 }
