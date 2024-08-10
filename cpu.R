@@ -40,6 +40,7 @@ if (N < nf) {
 	ind = sample(nf,N+as.integer(sqrt(nf-N)))
 	cat("--> selecting",length(ind),"files among",nf,"initial file list\n")
 	files = files[ind]
+	nf = length(files)
 }
 
 # convert from lexical to numeric order
@@ -78,8 +79,8 @@ cat("Nb of functions:",length(foncs),"\n")
 ntask = function(f) length(which(sapply(lf,function(fun) any(regexpr(f,fun) > 0))))
 ntaskf = unlist(mclapply(foncs,ntask,mc.cores=16))
 
-cons = file(sprintf("%s/drself.txt",cargs$path),open="w")
-cont = file(sprintf("%s/drtot.txt",cargs$path),open="w")
+cons = file("drself.txt",open="w")
+cont = file("drtot.txt",open="w")
 
 cat("proc",procs,"\n",file=cons)
 cat("proc",procs,"\n",file=cont)
