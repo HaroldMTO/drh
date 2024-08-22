@@ -15,8 +15,6 @@ if (file.exists("linux_bind.txt")) {
 		node[i & ! it] = inode
 		inode = inode+1
 	}
-} else {
-	cat("--> no file linux_bind.txt\n")
 }
 
 args = strsplit(commandArgs(trailingOnly=TRUE),split="=")
@@ -35,10 +33,12 @@ if ("nfiles" %in% names(cargs)) {
 	if (N == 0) N = nf
 }
 
+sel = ""
+
 if (N < nf) {
 	#ind = sample(nf,N+as.integer((nf-N)^.8))
 	ind = sample(nf,N+as.integer(sqrt(nf-N)))
-	cat("--> selecting",length(ind),"files among",nf,"initial file list\n")
+	sel = sprintf("among %d initial files",nf)
 	files = files[ind]
 	nf = length(files)
 }
@@ -49,14 +49,14 @@ procs = off+as.integer(gsub("drhook\\.prof\\.","",files))
 files = files[order(procs)]
 procs = sort(procs)
 
-cat("Read",nf,"DrHook files\n")
+cat("Read",nf,"DrHook files",sel,"\n")
 l = lf = vector("list",length(files))
 for (i in seq(along=files)) {
 	nd = readLines(paste(cargs$path,files[i],sep="/"))
-	l[[i]] = grep("\"?[a-z]\\w+\"?@[0-9]+(:.+)? *$",nd,ignore.case=TRUE,value=TRUE)
-	l[[i]] = gsub("\\w+>|\"|odb\\w+ - +|:\\w+\\.[hc]$","",l[[i]])
-	l[[i]] = gsub("(\\w+):@?","\\1:",l[[i]])
-	l[[i]] = gsub(": +",":",l[[i]])
+	s = grep("[a-z]\\w+\"?@[0-9]+(:.+)? *$",nd,ignore.case=TRUE,value=TRUE)
+	s = gsub("\\w+>|\"|odb\\w+ - +|:\\w+\\.[hc]$","",s)
+	s = gsub("(\\w+):@?","\\1:",s)
+	l[[i]] = gsub(": +",":",s)
 	stopifnot(all(regexpr("[a-z]\\w+@\\d+ *$",l[[i]],ignore.case=TRUE) > 0))
 	#lt[[i]] = sapply(strsplit(gsub("^ +","",l[[i]]),split=" +"),function(x) as.numeric(x[4:6]))
 	lf[[i]] = sapply(l[[i]],substring,97,USE.NAMES=FALSE)
@@ -69,12 +69,13 @@ funs = unlist(lf)
 stopifnot(all(regexpr("(\\w+[:%])*\\w+@\\d+$",funs) > 0))
 #funs = sapply(strsplit(l,split="  +"),"[",10)
 #funs = gsub(": +",":",sapply(l,substring,97,USE.NAMES=FALSE))
-cat("Nb of functions-threads:",length(funs),"\n")
 
 #foncs = unique(sort(gsub("\\*?((\\w+: *)?\\w+)@[0-9]+","\\1",funs)))
 foncs = unique(sort(gsub("((\\w+: *)*\\w+)@[0-9]+","\\1",funs)))
 
-cat("Nb of functions:",length(foncs),"\n")
+nt = max(as.integer(gsub(".+@","",funs)))
+cat("Nb of functions and functions-threads:",length(foncs),length(funs),
+	sprintf("(nb of threads: %d)",nt),"\n")
 
 ntask = function(f) length(which(sapply(lf,function(fun) any(regexpr(f,fun) > 0))))
 ntaskf = unlist(mclapply(foncs,ntask,mc.cores=16))
