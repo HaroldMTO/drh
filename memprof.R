@@ -73,6 +73,7 @@ if (all(regexpr(re,fics) > 0)) {
 			ix = which.max(diff(rowMeans(used)))
 			ntx = nt%/%20
 			indx = ix+seq(-ntx,ntx)
+			indx = indx[indx > 0 & indx <= nt]
 			png(sprintf("memprofx.%s.png",hostu[i]))
 			matplot(d[indx],used[indx,],type="l",lty=1,main="Zoom at max",xlab=xlab,
 				ylab="Memory (Gb)",col=grey.colors(4,end=.5),xaxt="n")
