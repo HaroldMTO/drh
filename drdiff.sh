@@ -2,26 +2,60 @@
 
 drh=~/util/drh
 
+usage()
+{
+	echo "Description:
+	Produce files comparing self and total times (DrHook) between 2 runs of ARPIFS binaries
+
+Usage:
+	drdiff.sh DIR1 [DIR2] [-f] [-h]
+
+Options:
+	DIR[i] are directories containing files produced by drh.sh (drself.txt and drtot.txt)
+	DIR1 points to the reference job, DIR2 points to the job to compare (default: '.')
+	-f: force the update of self.txt and tot.txt, disregarding timestamp
+	-h: print this help and exit normally"
+}
+
 set -e
 
-if echo $* | grep -qE '(^| +)-\w*h'
+d1=""
+d2=""
+alias force=false
+
+while [ $# -ne 0 ]
+do
+	case $1 in
+	-f) alias force=true;;
+	-h)
+		usage
+		exit
+		;;
+	*)
+		if [ -z "$d1" ]
+		then
+			d1=$1
+		elif [ -z "$d2" ]
+		then
+			d2=$1
+		fi
+		;;
+	esac
+
+	shift
+done
+
+if [ -z "$d1" ]
 then
-	echo "usage: drdiff DIR1 [DIR2] [-h]
-	DIR[i] are directories containing files produced by drh.sh (drself.txt and drtot.txt)
-	DIR1 points to the reference job, DIR2 points to the job to compare (default: '.')"
-	exit
-elif [ $# -eq 0 ]
-then
-	echo "error: usage" >&2
+	echo "error: see 'drdiff.sh -h' for help" >&2
 	exit 1
 fi
 
-d1=$1
-[ $# -gt 1 ] && d2=$2 || d2=.
+[ -z "$d2" ] && d2=.
 
 ls -d $d1 $d2 >/dev/null
 
-if [ $d1/drself.txt -nt self.txt ] || [ $d2/drself.txt -nt self.txt ]
+if [ $d1/drself.txt -nt self.txt ] || [ $d2/drself.txt -nt self.txt ] || force
 then
 	type R >/dev/null 2>&1 || module load -s intel R >/dev/null 2>&1
 

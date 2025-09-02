@@ -55,6 +55,7 @@ for (i in seq(along=files)) {
 	nd = readLines(paste(cargs$path,files[i],sep="/"))
 	s = grep("[a-z]\\w+\"?@[0-9]+(:.+)? *$",nd,ignore.case=TRUE,value=TRUE)
 	s = gsub("\\w+>|\"|odb\\w+ - +|:\\w+\\.[hc]$","",s)
+	s = gsub("^([^@]+@[0-9]+).*","\\1",s)
 	s = gsub("(\\w+):@?","\\1:",s)
 	l[[i]] = gsub(": +",":",s)
 	stopifnot(all(regexpr("[a-z]\\w+@\\d+ *$",l[[i]],ignore.case=TRUE) > 0))
@@ -71,14 +72,15 @@ stopifnot(all(regexpr("(\\w+[:%])*\\w+@\\d+$",funs) > 0))
 #funs = gsub(": +",":",sapply(l,substring,97,USE.NAMES=FALSE))
 
 #foncs = unique(sort(gsub("\\*?((\\w+: *)?\\w+)@[0-9]+","\\1",funs)))
-foncs = unique(sort(gsub("((\\w+: *)*\\w+)@[0-9]+","\\1",funs)))
+foncs = sort(gsub("((\\w+: *)*\\w+)@[0-9]+","\\1",funs))
+foncu = unique(foncs)
 
 nt = max(as.integer(gsub(".+@","",funs)))
-cat("Nb of functions and functions-threads:",length(foncs),length(funs),
+cat("Nb of functions and functions-threads:",length(foncu),length(funs),
 	sprintf("(nb of threads: %d)",nt),"\n")
 
 ntask = function(f) length(which(sapply(lf,function(fun) any(regexpr(f,fun) > 0))))
-ntaskf = unlist(mclapply(foncs,ntask,mc.cores=16))
+ntaskf = unlist(mclapply(foncu,ntask,mc.cores=16))
 
 cons = file("drself.txt",open="w")
 cont = file("drtot.txt",open="w")
@@ -92,9 +94,9 @@ if (! is.null(node)) {
 	cat("node",node,"\n",file=cont)
 }
 
-#indf = vector("integer",length(foncs))
+#indf = vector("integer",length(foncu))
 
-sfoncs = sprintf("\\<%s@",foncs)
+sfoncs = sprintf("\\<%s@",foncu)
 lind = mclapply(sfoncs,grep,funs,mc.cores=16)
 indf = sapply(lind,"[",1)
 times = t(times)
@@ -103,9 +105,9 @@ cat("call",times[indf,3],"\n",file=cont)
 cat("ntask",ntaskf,"\n",file=cons)
 cat("ntask",ntaskf,"\n",file=cont)
 
-for (i in seq(along=foncs)) {
-	cat(foncs[i],times[lind[[i]],1],"\n",file=cons)
-	cat(foncs[i],times[lind[[i]],2],"\n",file=cont)
+for (i in seq(along=foncu)) {
+	cat(foncu[i],times[lind[[i]],1],"\n",file=cons)
+	cat(foncu[i],times[lind[[i]],2],"\n",file=cont)
 }
 
 close(cons)

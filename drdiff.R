@@ -28,7 +28,7 @@ tt = numeric(length(f2))
 st = character(length(f2))
 
 for (i in seq(along=f2)) {
-	q2 = quantile(t2[[i]],c(0,.5,1))
+	q2 = quantile(t2[[i]],c(0,.5,1),na.rm=TRUE)
 	tt[i] = q2[3]
 	s2 = sprintf("% 8.3f",q2)
 	npi = min(ntask,length(t2[[i]]))
@@ -38,16 +38,16 @@ for (i in seq(along=f2)) {
 
 	ind = match(tolower(f2[i]),tolower(f1))
 	if (is.na(ind)) {
-		ind = match(tolower(f2[i]),tolower(gsub("\\w+:","",f1)))
+		ind = match(tolower(f2[i]),tolower(f1))
 		if (is.na(ind)) {
-			st[i] = sprintf("%28s %6d %3s %s",gsub("\\w+:","",f2[i]),calls[i],sn,
+			st[i] = sprintf("%28s %6d %3s %s",gsub("\\w+:(\\w)","\\1",f2[i]),calls[i],sn,
 				paste(s2,collapse=" "))
 			next
 		}
 	}
 
-	s = sprintf("% 8.3f",q2-quantile(t1[[ind]],c(0,.5,1)))
-	st[i] = sprintf("%28s %6d %3s %s %s",gsub("\\w+:","",f2[i]),calls[i],sn,
+	s = sprintf("% 8.3f",q2-quantile(t1[[ind]],c(0,.5,1),na.rm=TRUE))
+	st[i] = sprintf("%28s %6d %3s %s %s",gsub("\\w+:(\\w)","\\1",f2[i]),calls[i],sn,
 		paste(s2,collapse=" "),paste(s,collapse=" "))
 }
 
